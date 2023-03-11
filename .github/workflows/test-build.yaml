@@ -81,3 +81,36 @@ jobs:
       - name: Build
         run: make build
       # todo: upload browser extension artifacts
+
+  build-userscript:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build
+        run: make build
+        env:
+          VERSION: "${{ steps.get_version.outputs.version-without-v }}"
+
+      - name: Create userscript
+        run: |
+          mkdir release
+          mv public/userscript.js release/openai-translator-${{ steps.get_version.outputs.version-without-v }}.user.js
+
+      - name: Upload userscript to release
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.release_upload_url }}
+          asset_path: release/openai-translator-${{ steps.get_version.outputs.version-without-v }}.user.js
+          asset_name: openai-translator-${{ steps.get_version.outputs.version-without-v }}.user.js
+          asset_content_type: application/javascript
