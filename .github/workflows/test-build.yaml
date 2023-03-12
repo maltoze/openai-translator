@@ -100,6 +100,7 @@ jobs:
 
   build-browser-extension:
     runs-on: ubuntu-22.04
+    needs: create-release
     permissions:
       contents: write
 
