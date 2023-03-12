@@ -100,23 +100,8 @@ jobs:
 
   build-browser-extension:
     runs-on: ubuntu-22.04
-
-    steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: yarn install
-
-      - name: Build
-        run: make build
-      # todo: upload browser extension artifacts
-
-  build-userscript:
-    runs-on: ubuntu-22.04
-    needs: create-release
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v3
@@ -136,6 +121,13 @@ jobs:
         run: |
           mkdir release
           mv public/userscript.js release/openai-translator-${{ steps.get_version.outputs.version-without-v }}.user.js
+
+      - name: Package plugin
+        run: |
+          mkdir release
+          mv dist/browser-extension/chromium release/openai-translator-chrome-extension-${{ steps.get_version.outputs.version-without-v }}
+          cd release
+          zip -r openai-translator-chrome-extension-${{ steps.get_version.outputs.version-without-v }}.zip ./openai-translator-chrome-extension-${{ steps.get_version.outputs.version-without-v }}/*
 
       - name: Upload userscript to release
         id: upload-release-asset
